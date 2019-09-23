@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  ld_postgres:
+    container_name: ld_postgres_XX
+    image: img_postgres_ld:latest
+    environment:
+      BDD_SERVICE: postgresql
+    volumes:
+    - bdd_volume_pXX:/var/lib/postgresql
+
+  ld_tomcat_postgres:
+    container_name: ld_tomcat_postgres_XX
+    image: img_tomcat_ld:latest
+    depends_on:
+    - ld_postgres
+    ports:
+    - "8080:8080"
+    environment:
+      DB_ENGINE: postgres
+      DB_HOST: ld_postgres_XX
+      NB_SEC: 30
+    links:
+    - "ld_postgres:img_postgres_ld"
+
+volumes:
+  bdd_volume_pXX: {}
+  

@@ -1,0 +1,28 @@
+# Fichier Dockerfile pour le poste des recetteurs
+
+# Récupère une image de Debian 9 :
+FROM debian:stretch
+
+# Met à jours les packets :
+RUN apt-get update
+
+# Installe le GUI :
+RUN DEBIAN_FRONTEND=noninteractive apt-get install xfce4 -y
+
+# Installe des outils prerequis pour la suite :
+RUN apt-get install -y xfce4-goodies tightvncserver gnome-icon-theme openjdk-8-jdk wget sudo python python-pip
+
+# Installation d'open-ssh-server :
+RUN apt install -y openssh-server
+RUN mkdir -p /root/.ssh
+COPY id_rsa.pub /root/.ssh/authorized_keys
+RUN cat /root/.ssh/authorized_keys
+
+# Installe VNC Server :
+RUN adduser vnc
+RUN apt-get purge -y pm-utils xscreensaver*
+RUN apt-get install wget -y
+
+EXPOSE 5901
+
+RUN wget -qO- https://bintray.com/tigervnc/stable/download_file?file_path=tigervnc-1.8.0.x86_64.tar.gz 

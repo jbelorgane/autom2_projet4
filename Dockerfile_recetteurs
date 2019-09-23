@@ -1,0 +1,98 @@
+# Fichier Dockerfile pour le poste des recetteurs
+
+# Récupère une image de Debian 9 :
+FROM debian:stretch
+
+# Met à jours les packets :
+RUN apt-get update
+
+# Installe le GUI :
+RUN DEBIAN_FRONTEND=noninteractive apt-get install xfce4 -y
+
+# Installe des outils prerequis pour la suite :
+RUN apt-get install -y xfce4-goodies tightvncserver gnome-icon-theme openjdk-8-jdk wget sudo python python-pip
+
+# Installation d'open-ssh-server :
+RUN apt install -y openssh-server
+RUN mkdir -p /root/.ssh
+COPY id_rsa.pub /root/.ssh/authorized_keys
+RUN cat /root/.ssh/authorized_keys
+
+# Installe VNC Server :
+RUN adduser vnc
+RUN apt-get purge -y pm-utils xscreensaver*
+RUN apt-get install wget -y
+
+EXPOSE 5901
+
+RUN wget -qO- https://bintray.com/tigervnc/stable/download_file?file_path=tigervnc-1.8.0.x86_64.tar.gz 
+#RUN wget -qO- https://dl.bintray.com/tigervnc/stable/tigervnc-1.8.0.x86_64.tar.gz | tar xz --strip 1 -C /
+#COPY tigervnc-1.8.0.x86_64.tar.gz .
+RUN tar xzvf tigervnc-1.8.0.x86_64.tar.gz # --strip 1 -C /
+RUN mkdir ~/.vnc
+RUN echo "123456" | vncpasswd -f >> ~/.vnc/passwd
+RUN chmod 600 ~/.vnc/passwd
+
+CMD ["/tigervnc-1.8.0.x86_64/usr/bin/vncserver", "-fg"]
+
+# Met à jours les packets :
+RUN apt-get update
+
+# Crée un répertoire de travail :
+RUN mkdir OUTILS_RECETTEUR
+WORKDIR OUTILS_RECETTEUR
+
+# Installe Firefox :
+#RUN wget -O - http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/25.0/linux-x86_64/en-US/firefox-25.0.tar.bz2 | tar jx
+#ADD firefox-69.0.tar.bz2 .
+RUN wget -O - http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/25.0/linux-x86_64/en-US/firefox-25.0.tar.bz2 
+RUN tar jxvf firefox-69.0.tar.bz2 
+RUN rm ./firefox-69.0.tar.bz2 
+RUN useradd -m -d /data -p saIVpsc0EVTwA sysadmin
+RUN sed -Ei 's/sudo:x:27:/sudo:x:27:sysadmin/' /etc/group
+
+# Installe Chrome :
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+#COPY google-chrome-stable_current_amd64.deb .
+RUN apt-get -y install ./google-chrome-stable_current_amd64.deb
+RUN rm ./google-chrome-stable_current_amd64.deb
+
+# Installe SoapUI open source :
+RUN wget dl.eviware.com/soapuios/5.2.1/SoapUI-5.2.1-linux-bin.tar.gz
+RUN tar -xzf SoapUI-5.2.1-linux-bin.tar.gz
+RUN rm ./SoapUI-5.2.1-linux-bin.tar.gz
+#ADD SoapUI-5.2.1-linux-bin.tar.gz .
+RUN chmod +x SoapUI-5.2.1/bin/soapui.sh
+COPY REST-Project-1-soapui-project.xml SoapUI-5.2.1/bin/.
+
+# Installe Zaproxy :
+RUN wget https://github.com/zaproxy/zaproxy/releases/download/v2.8.1/ZAP_2.8.1_Linux.tar.gz
+RUN tar -xzf ZAP_2.8.1_Linux.tar.gz
+RUN rm ZAP_2.8.1_Linux.tar.gz
+#ADD ZAP_2.8.1_Linux.tar.gz .
+RUN chmod +x ZAP_2.8.1/zap.sh
+
+# Installe squirrel :
+RUN wget https://downloads.sourceforge.net/project/squirrel-sql/1-stable/4.0.0-plainzip/squirrelsql-4.0.0-standard.zip
+#COPY squirrelsql-4.0.0-standard.zip .
+RUN unzip squirrelsql-4.0.0-standard.zip
+RUN rm ./squirrelsql-4.0.0-standard.zip
+RUN chmod +x -R squirrelsql-4.0.0-standard/squirrel-sql.sh
+RUN cd ./squirrelsql-4.0.0-standard/lib
+RUN wget https://fr.osdn.net/frs/g_redir.php?m=kent&f=vimcloud/mysql-connector-java-5.1.18-bin.jar
+RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.8.jar
+#COPY mysql-connector-java-5.1.18-bin.jar ./squirrelsql-4.0.0-standard/lib/.
+#COPY postgresql-42.2.8.jar ./squirrelsql-4.0.0-standard/lib/.
+
+EXPOSE 8080
+
+RUN rm -f squirrelsql-4.0.0-standard.zip google-chrome-stable_current_amd64.deb
+
+# docker build --file Dockerfile_recetteurs -t img_recetteur /home/formation/Documents/MODULE_4/Projet_4/deploy-recetteur/autom2_projet4_recetteur_1
+# docker run -it --name=recetteur -d img_recetteur
+
+# docker build --file Dockerfile_recetteurs -t img_recetteur /home/formation/PROJET4
+# docker run -it --name=recetteur -d img_recetteur
+
+# docker exec -it recetteurs /bin/bash
+

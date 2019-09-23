@@ -1,0 +1,45 @@
+# Création de l'image BDD Postgres pour LogicalDoc
+FROM postgres:9.3
+
+# Informations sur l'image à créer
+LABEL maintener="autom2.groupe1@henix.fr" Description="Image postgres:9.3 avec les scripts de création de la BDD et du user et de peuplement pour LogicalDoc" tag="postgres:9.3"
+
+# Variables d'environnement des scripts de création et le peuplement de la BDD et divers
+ENV BDD_SERVICE   postgresql
+ENV BDD_INIT_SH   init_bdd_${BDD_SERVICE}.sh
+ENV BDD_INIT_SQL  init_bdd_${BDD_SERVICE}.sql
+ENV BDD_INIT_DUMP logicaldoc_${BDD_SERVICE}.sql
+#
+ENV WAIT_HERE_SH  wait_here.sh
+
+# Variables d'environnement pour la création et le peuplement de la BDD
+ENV DB_NAME       logicaldoc
+ENV DB_USER       ldoc
+ENV DB_PASSWORD   password
+
+# Installation des packages nécessaires
+RUN apt-get update; apt-get install -y sudo vim 
+
+# Nettoyage des packages obsolètes
+RUN apt-get autoclean autoremove
+
+# Exposition à l'extérieur du port 5432 du conteneur
+EXPOSE 5432
+
+# Récupération dans WORKDIR=/tmp des scripts définis plus haut
+WORKDIR /tmp
+COPY ${BDD_INIT_SH} .
+COPY ${BDD_INIT_SQL} .
+COPY ${BDD_INIT_DUMP} .
+COPY ${WAIT_HERE_SH} .
+
+# Ajout des droits d'exécution aux scripts SHELL
+RUN chmod +x ${BDD_INIT_SH} ${WAIT_HERE_SH}
+
+# Création d'un cluster Postgres, maj du fichier de conf de Postgres, lancement du service de Postgres, création de la BDD et du USER, puis peuplement de la BDD 
+CMD pg_createcluster 9.3 main --start \
+    && sleep 2 \
+    && sed -i 's!host    all             all             127.0.0.1/32            md5!&\nhost    all             all             172.0.0.0/8             md5!' /etc/postgresql/9.3/main/pg_hba.conf \
+    && service ${BDD_SERVICE} restart \
+    && cd /tmp && ./${BDD_INIT_SH} \
+    && ./${WAIT_HERE_SH}

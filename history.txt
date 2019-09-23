@@ -1,0 +1,63 @@
+docker run --link ld_mysql:img_m_ld -p 8080:8080 -e MSQL_ROOT_PASSWORD=password  --ip 192.168.102.188  img_tom_ld 
+ 
+scp Dockerfile_mysql_logicaldoc formation@192.168.102.191:/tmp/
+scp init_bdd_mysql.s* formation@192.168.102.191:/tmp/
+scp formation@192.168.102.116:/tmp/logical_postgres.sql .
+
+docker exec -it 2b5 mysql -u ldoc -D logicaldoc -p
+docker exec -it 2b5 /bin/bash
+
+hostname -I
+ssh-copy-id formation@192.168.102.116
+ssh formation@192.168.102.116
+ssh-copy-id formation@192.168.102.191
+ssh formation@192.168.102.191
+
+scp Dockerfile.postgres formation@192.168.102.116:/tmp/Dockerfile.postgres
+scp maj_context_properties.sh formation@192.168.102.116:/tmp/Dockerfile.postgres
+
+scp formation@192.168.102.116:/tmp/init_bdd_postgres.* .
+scp formation@192.168.102.116:/tmp/Dockerfile_postgres_logicaldoc .
+
+--------
+
+docker-reset 
+docker volume prune
+docker images
+docker rmi img_postgres_ld:latest
+docker rmi img_mysql_ld:latest
+docker rmi img_tomcat_ld:latest
+docker images
+
+docker build -t img_postgres_ld -f Dockerfile_Postgres_Logicaldoc .
+docker build -t img_mysql_ld    -f Dockerfile_Mysql_Logicaldoc .
+docker build -t img_tomcat_ld   -f Dockerfile_Logicaldoc .
+docker build -t img_recetteur   -f Dockerfile_recetteurs .
+
+docker images
+
+docker run --name=recetteur -d img_recetteur
+docker ps
+docker logs recetteur
+
+docker run --name=ld_postgres -d img_postgres_ld
+docker ps
+docker logs ld_postgres
+
+docker run --name=ld_mysql -d img_mysql_ld
+docker ps
+docker logs ld_mysql
+
+docker run --name ld_tomcat_postgres --link ld_postgres:img_postgres_ld -p 8080:8080 img_tomcat_ld 
+docker ps
+docker logs ld_tomcat_postgres
+
+docker run --name ld_tomcat_mysql --link ld_mysql:img_mysql_ld -p 8081:8080 -e DB_ENGINE=mysql -e DB_HOST=ld_mysql img_tomcat_ld 
+docker ps
+docker logs ld_tomcat_mysql
+
+docker ps -a
+
+docker-compose -f docker-compose-ld_postgres.yml up
+docker-compose -f docker-compose-ld_mysql.yml up
+docker-compose -f docker-compose-recetteur.yml up

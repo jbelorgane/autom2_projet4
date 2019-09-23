@@ -1,0 +1,66 @@
+# Création de l'image Tomcat:9 avec le war LogicalDoc
+FROM tomcat:9.0-jdk11-openjdk-slim
+
+# Informations sur l'image à créer
+LABEL maintener="autom2.groupe1@henix.fr" Description="Image Tomcat:9-jdk11 avec le war de l'application LogicalDoc" tag="tomcat:9.0-jdk11-openjdk-slim"
+
+# Variables spécifiques au build du conteneur LogicalDoc
+ENV DB_ENGINE=postgres
+ENV DB_HOST=ld_${DB_ENGINE}
+ENV NB_SEC=20
+#
+ENV APP_NAME=logicaldoc
+ENV WAR_FILE=${APP_NAME}.war
+ENV WAR_DIR=${APP_NAME}
+ENV TOMCAT_DIR=/usr/local/tomcat
+ENV TOMCAT_BIN_DIR=${TOMCAT_DIR}/bin
+ENV TOMCAT_WEBAPPS_DIR=${TOMCAT_DIR}/webapps
+ENV TOMCAT_PROPERTIES_DIR=${TOMCAT_WEBAPPS_DIR}/${WAR_DIR}/WEB-INF/classes
+#
+ENV DB_NAME=${APP_NAME}
+ENV DB_USER=ldoc
+ENV DB_PASSWORD=password
+#
+ENV MAJ_CONTEXT_PROPERTIES_SH=maj_context_properties.sh
+ENV MAJ_CONTEXT_PROPERTIES_LOG=maj_context_properties.log
+ENV WAIT_HERE_SH=wait_here.sh
+
+# Variables spécifiques au conteneur BDD Mysql
+ENV MSQL_ROOT_PASSWORD=password
+ENV MYSQL_DB_PORT=3306
+
+# Variables spécifiques au conteneur BDD Postgres
+ENV POSTGRES_PASSWORD=password
+ENV POSTGRES_DB_PORT=5432
+
+# Installation des packages nécessaires
+RUN apt-get update; apt-get install -y wget sudo vim
+
+# Création d'un volume pour la persistence de la configuration de l'application
+VOLUME /LogicalDoc/conf
+
+# Récupération du war de l'application "LogicalDoc" dans le répertoire WORKDIR=/tmp
+WORKDIR /tmp 
+RUN wget https://www.dropbox.com/s/cf999m4djxm6m7z/${WAR_FILE} 
+RUN mv ./${WAR_FILE} ${TOMCAT_WEBAPPS_DIR}
+
+# Ménage des packages obsolètes
+RUN apt-get autoclean autoremove
+
+# Exposition à l'extérieur du port 8080 du conteneur
+EXPOSE 8080
+
+# Récupération dans WORKDIR des scripts définis plus haut
+COPY ${MAJ_CONTEXT_PROPERTIES_SH} .
+COPY ${WAIT_HERE_SH} .
+
+# Ajout des droits d'exécution aux scripts SHELL précédents
+RUN chmod +x ${MAJ_CONTEXT_PROPERTIES_SH} ${WAIT_HERE_SH}
+
+# Lancement de l'application "LogicalDoc" avec la BDD (DB_ENGINE=mysql ou postgres) associée
+CMD cd ${TOMCAT_WEBAPPS_DIR} && mkdir ${WAR_DIR} && cd ${WAR_DIR} && jar -xvf ../${WAR_FILE} > /tmp/${WAR_FILE}.log \
+    && /tmp/${MAJ_CONTEXT_PROPERTIES_SH} ${DB_ENGINE} ${DB_NAME} ${DB_HOST} ${DB_USER} ${DB_PASSWORD} > /tmp/${MAJ_CONTEXT_PROPERTIES_LOG} \
+    && echo "Reconfiguration du context.properties de BDD sur '${DB_ENGINE}'... effectuée." \
+    && cat /tmp/${MAJ_CONTEXT_PROPERTIES_LOG} | grep "jdbc.url" \
+    && sleep ${NB_SEC} && cd ${TOMCAT_BIN_DIR} && ./startup.sh \
+    && /tmp/${WAIT_HERE_SH} 

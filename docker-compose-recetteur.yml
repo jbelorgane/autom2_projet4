@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+
+  recetteur:
+    container_name: recetteur
+    image: img_recetteur:latest
+

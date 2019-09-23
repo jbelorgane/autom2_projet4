@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  ld_mysql:
+    container_name: ld_mysql_XX
+    image: img_mysql_ld:latest
+    environment:
+      BDD_SERVICE: mysql
+    volumes:
+    - bdd_volume_mXX:/var/lib/mysql
+
+  ld_tomcat_mysql:
+    container_name: ld_tomcat_mysql_XX
+    image: img_tomcat_ld:latest
+    depends_on:
+    - ld_mysql
+    ports:
+    - "8180:8080"
+    environment:
+      DB_ENGINE: mysql
+      DB_HOST: ld_mysql_XX
+      NB_SEC: 50
+    links:
+    - "ld_mysql:img_mysql_ld"
+
+volumes:
+  bdd_volume_mXX: {}
+  
