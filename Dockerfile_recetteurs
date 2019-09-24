@@ -24,8 +24,6 @@ RUN apt-get purge -y pm-utils xscreensaver*
 EXPOSE 5901
 
 RUN wget -qO- https://dl.bintray.com/tigervnc/stable/tigervnc-1.8.0.x86_64.tar.gz | tar xz --strip 1 -C /
-#COPY tigervnc-1.8.0.x86_64.tar.gz .
-#RUN tar xzvf tigervnc-1.8.0.x86_64.tar.gz --strip 1 -C /
 RUN mkdir ~/.vnc
 RUN echo "123456" | vncpasswd -f >> ~/.vnc/passwd
 RUN chmod 600 ~/.vnc/passwd
@@ -70,13 +68,9 @@ COPY postgresql-42.2.8.jar ./squirrelsql-4.0.0-standard/lib/.
 
 EXPOSE 8080
 
-RUN rm SoapUI-5.2.1-linux-bin.tar.gz ZAP_2.8.1_Linux.tar.gz squirrelsql-4.0.0-standard.zip google-chrome-stable_current_amd64.deb postgresql-42.2.8.jar
+RUN rm -f SoapUI-5.2.1-linux-bin.tar.gz ZAP_2.8.1_Linux.tar.gz squirrelsql-4.0.0-standard.zip google-chrome-stable_current_amd64.deb postgresql-42.2.8.jar
 
 # docker build --file Dockerfile_recetteurs -t img_recetteur .
 # docker run -it --name=recetteur -d img_recetteur
-
-# docker build --file Dockerfile_recetteurs -t img_recetteur .
-# docker run -it --name=recetteur -d img_recetteur
-
-# docker exec -it recetteurs /bin/bash
+# docker exec -it recetteur /bin/bash
 
