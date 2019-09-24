@@ -46,7 +46,7 @@ case ${SGBDR} in
         sed "s/XX/${F_IDX}/g" ${TEMP_DC_LD_POSTGRES} > ${DC_LD_POSTGRES}
         NEW_8080=$(expr ${IDX} + 8080)
         sed -i "s/8080:/${NEW_8080}:/" ${DC_LD_POSTGRES}
-	echo "URL LogicalDoc avec Postgresql = localhost:${NEW_8080}/logialdoc "
+	echo "URL LogicalDoc avec Postgresql = localhost:${NEW_8080}/logicaldoc "
         ;;
 
     ${SGBDR_MYSQL})
@@ -54,20 +54,20 @@ case ${SGBDR} in
         sed "s/XX/${F_IDX}/g" ${TEMP_DC_LD_MYSQL} > ${DC_LD_MYSQL}
         NEW_8180=$(expr ${IDX} + 8180)
         sed -i "s/8180:/${NEW_8180}:/" ${DC_LD_MYSQL}
-	echo "URL LogicalDoc avec Mysql = localhost:${NEW_8180}/logialdoc "
+	echo "URL LogicalDoc avec Mysql = localhost:${NEW_8180}/logicaldoc "
         ;;
 
     *) # TEMP_DC_LD_POSTGRES --> DC_LD_POSTGRES
         sed "s/XX/${F_IDX}/g" ${TEMP_DC_LD_POSTGRES} > ${DC_LD_POSTGRES}
         NEW_8080=$(expr ${IDX} + 8080)
         sed -i "s/8080:/${NEW_8080}:/" ${DC_LD_POSTGRES}
-	echo "URL LogicalDoc avec Postgresql = localhost:${NEW_8080}/logialdoc "
+	echo "URL LogicalDoc avec Postgresql = localhost:${NEW_8080}/logicaldoc "
 
        # TEMP_DC_LD_MYSQL --> DC_LD_MYSQL
         sed "s/XX/${F_IDX}/g" ${TEMP_DC_LD_MYSQL} > ${DC_LD_MYSQL}
         NEW_8180=$(expr ${IDX} + 8180)
         sed -i "s/8180:/${NEW_8180}:/" ${DC_LD_MYSQL}
-	echo "URL LogicalDoc avec Mysql = localhost:${NEW_8180}/logialdoc "
+	echo "URL LogicalDoc avec Mysql = localhost:${NEW_8180}/logicaldoc "
         ;;
 esac
 echo "${IDX}" > ${AUTO_IDX_FILE} 
