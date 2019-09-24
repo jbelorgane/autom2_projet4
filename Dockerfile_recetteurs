@@ -61,14 +61,14 @@ RUN chmod +x ZAP_2.8.1/zap.sh
 RUN wget https://downloads.sourceforge.net/project/squirrel-sql/1-stable/4.0.0-plainzip/squirrelsql-4.0.0-standard.zip
 RUN unzip squirrelsql-4.0.0-standard.zip
 RUN chmod +x -R squirrelsql-4.0.0-standard/squirrel-sql.sh
-RUN wget https://fr.osdn.net/frs/g_redir.php?m=kent&f=vimcloud/mysql-connector-java-5.1.18-bin.jar
+RUN wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.18/mysql-connector-java-5.1.18.jar
 RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.8.jar
-COPY mysql-connector-java-5.1.18-bin.jar ./squirrelsql-4.0.0-standard/lib/.
-COPY postgresql-42.2.8.jar ./squirrelsql-4.0.0-standard/lib/.
+RUN mv mysql-connector-java-5.1.18.jar ./squirrelsql-4.0.0-standard/lib/.
+RUN mv postgresql-42.2.8.jar ./squirrelsql-4.0.0-standard/lib/.
 
 EXPOSE 8080
 
-RUN rm -f SoapUI-5.2.1-linux-bin.tar.gz ZAP_2.8.1_Linux.tar.gz squirrelsql-4.0.0-standard.zip google-chrome-stable_current_amd64.deb postgresql-42.2.8.jar
+RUN rm -f SoapUI-5.2.1-linux-bin.tar.gz ZAP_2.8.1_Linux.tar.gz squirrelsql-4.0.0-standard.zip google-chrome-stable_current_amd64.deb
 
 # docker build --file Dockerfile_recetteurs -t img_recetteur .
 # docker run -it --name=recetteur -d img_recetteur
