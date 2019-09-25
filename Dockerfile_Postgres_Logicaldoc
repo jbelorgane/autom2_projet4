@@ -18,7 +18,7 @@ ENV DB_USER       ldoc
 ENV DB_PASSWORD   password
 
 # Installation des packages nécessaires
-RUN apt-get update; apt-get install -y sudo vim 
+RUN apt-get update; apt-get install -y sudo vim disown 
 
 # Nettoyage des packages obsolètes
 RUN apt-get autoclean autoremove
